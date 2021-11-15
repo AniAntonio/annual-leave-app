@@ -51,7 +51,7 @@ public class AnnualLeaveServiceImplTest {
 
     @Test
     public void updateAnnualLeave() {
-        when(annualLeaveRepository.findByUserId(1)).thenReturn(Optional.of(new AnnualLeave()));
+        when(annualLeaveRepository.findByUserId(1)).thenReturn(Optional.of(annualLeave()));
         when(annualLeaveRepository.save(Mockito.any(AnnualLeave.class))).thenReturn(annualLeave());
         annualLeaveService.updateAnnualLeave(updateAnnualLeaveDto());
     }
