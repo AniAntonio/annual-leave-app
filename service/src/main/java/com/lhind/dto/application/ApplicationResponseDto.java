@@ -7,6 +7,8 @@ import lombok.Data;
 
 import java.util.Date;
 
+import static com.lhind.util.RegexPatterns.DATE_PATTERN;
+
 @Data
 public class ApplicationResponseDto {
     private Integer id;
@@ -21,9 +23,9 @@ public class ApplicationResponseDto {
 
     private String comment;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN)
     private Date startDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN)
     private Date endDate;
 }
