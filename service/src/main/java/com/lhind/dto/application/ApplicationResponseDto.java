@@ -23,9 +23,9 @@ public class ApplicationResponseDto {
 
     private String comment;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN, timezone = "CET")
     private Date startDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN, timezone = "CET")
     private Date endDate;
 }

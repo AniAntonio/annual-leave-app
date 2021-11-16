@@ -17,7 +17,7 @@ public interface IApplicationService {
 
     ApplicationResponseDto rejectApplication(RejectApplicationDto approveApplicationDto);
 
-    List<ApplicationResponseDto> getSupervisorApplications(ApplicationFilterDto applicationFilterDto);
+    List<ApplicationResponseDto> getApplications(ApplicationFilterDto applicationFilterDto);
 
     Resource generateXlsx(ApplicationFilterDto applicationFilterDto);
 

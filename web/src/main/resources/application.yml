@@ -16,3 +16,10 @@ jwt:
   secret: secret
   clockSkew: 10
   validFor: 36000
+
+
+spring:
+  jackson:
+    time-zone:
+      CET
+

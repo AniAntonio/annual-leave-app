@@ -28,8 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static com.lhind.service.specification.ApplicationSpecification.getUserApplications;
-import static com.lhind.util.DateUtil.addDays;
-import static com.lhind.util.DateUtil.beforeToday;
+import static com.lhind.util.DateUtil.*;
 import static com.lhind.util.LhindUtil.PROBATION_PERIOD_DAYS;
 
 @Slf4j
@@ -65,6 +64,12 @@ public class ApplicationServiceImpl implements IApplicationService {
         if (!previewsApplications.isEmpty()) {
             for (Application app : previewsApplications
             ) {
+                log.info("Getting previous applications if any!");
+                if ((applicationDto.getStartDate().after(app.getStartDate()) || applicationDto.getStartDate().equals(app.getStartDate()))
+                        && (applicationDto.getStartDate().before(app.getEndDate()) || applicationDto.getStartDate().equals(app.getEndDate()))
+                        || applicationDto.getStartDate().before(today())) {
+                    throw new InputException(BadRequest.APPLICATION_ALREADY_REQUESTED);
+                }
                 daysOnOtherApplications = daysOnOtherApplications + app.getDaysOff();
             }
         }
@@ -146,7 +151,7 @@ public class ApplicationServiceImpl implements IApplicationService {
     }
 
     @Override
-    public List<ApplicationResponseDto> getSupervisorApplications(ApplicationFilterDto applicationFilterDto) {
+    public List<ApplicationResponseDto> getApplications(ApplicationFilterDto applicationFilterDto) {
         log.info("Getting my Applications!");
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
         applicationRepository.findAll(getUserApplications(applicationFilterDto), pageable);
