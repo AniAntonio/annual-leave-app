@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static com.lhind.service.specification.ApplicationSpecification.getUserApplications;
@@ -50,35 +51,22 @@ public class ApplicationServiceImpl implements IApplicationService {
 
 
     @Override
-    public ApplicationResponseDto createApplication(ApplicationDto applicationDto, Integer uderId) {
+    public ApplicationResponseDto createApplication(ApplicationDto applicationDto, Integer userId) {
         log.info("Getting annual leave data for the user!");
-        AnnualLeaveResponseDto annualLeaveResponseDto = annualLeaveService.getAnnualLeaveByUserId(uderId);
+        AnnualLeaveResponseDto annualLeaveResponseDto = annualLeaveService.getAnnualLeaveByUserId(userId);
         log.info("Checking probation period!");
         if (beforeToday(PROBATION_PERIOD_DAYS).before(annualLeaveResponseDto.getEmploymentDate())) {
             throw new InputException(BadRequest.PROBATION_PERIOD_NOT_PASSED);
         }
         log.info("Probation period check passed");
+        Date startDate = applicationDto.getStartDate();
         log.info("Getting previous applications if any!");
-        List<Application> previewsApplications = applicationRepository.getRequestedApplications(uderId, ApplicationStatus.REQUESTED);
-        Integer daysOnOtherApplications = 0;
-        if (!previewsApplications.isEmpty()) {
-            for (Application app : previewsApplications
-            ) {
-                log.info("Getting previous applications if any!");
-                if ((applicationDto.getStartDate().after(app.getStartDate()) || applicationDto.getStartDate().equals(app.getStartDate()))
-                        && (applicationDto.getStartDate().before(app.getEndDate()) || applicationDto.getStartDate().equals(app.getEndDate()))
-                        || applicationDto.getStartDate().before(today())) {
-                    throw new InputException(BadRequest.APPLICATION_ALREADY_REQUESTED);
-                }
-                daysOnOtherApplications = daysOnOtherApplications + app.getDaysOff();
-            }
-        }
+        Integer daysOnOtherApplications = getPreviousApplicationDaysOff(userId, startDate);
         log.info("Calculated previous application daysOff requested!");
         if (applicationDto.getDaysOff() + daysOnOtherApplications > annualLeaveResponseDto.getRemainingDays()) {
             throw new InputException(BadRequest.NOT_SUFFICIENT_DAYS);
         }
         Application application = createApplication(applicationDto, annualLeaveResponseDto);
-
         sendEmail(application);
         return ApplicationConverter.toApplicationResponse(applicationRepository.save(application));
     }
@@ -94,6 +82,15 @@ public class ApplicationServiceImpl implements IApplicationService {
 
     @Override
     public ApplicationResponseDto updateApplication(ApplicationUpdateDto applicationUpdateDto, Integer userId) {
+        log.info("Getting annual leave data for the user!");
+        AnnualLeaveResponseDto annualLeaveResponseDto = annualLeaveService.getAnnualLeaveByUserId(userId);
+        Date startDate = applicationUpdateDto.getStartDate();
+        log.info("Getting previous applications if any!");
+        Integer daysOnOtherApplications = getPreviousApplicationDaysOff(userId, startDate);
+        log.info("Calculated previous application daysOff requested!");
+        if (applicationUpdateDto.getDaysOff() + daysOnOtherApplications > annualLeaveResponseDto.getRemainingDays()) {
+            throw new InputException(BadRequest.NOT_SUFFICIENT_DAYS);
+        }
         log.info("Finding application by Id!!");
         Application application = applicationRepository.findById(applicationUpdateDto.getId()).orElseThrow(() -> new LhindNotFoundException(NoData.APPLICATION_NOT_FOUND));
         log.info("Checking if application is in REQUESTED status!");
@@ -102,7 +99,27 @@ public class ApplicationServiceImpl implements IApplicationService {
         }
         log.info("Check passed!");
         application.setDaysOff(applicationUpdateDto.getDaysOff());
+        application.setStartDate(applicationUpdateDto.getStartDate());
+        application.setEndDate(addDays(applicationUpdateDto.getStartDate(), applicationUpdateDto.getDaysOff()));
         return ApplicationConverter.toApplicationResponse(applicationRepository.save(application));
+    }
+
+    private Integer getPreviousApplicationDaysOff(Integer userId, Date startDate) {
+        List<Application> previewsApplications = applicationRepository.getRequestedApplications(userId, ApplicationStatus.REQUESTED);
+        Integer daysOnOtherApplications = 0;
+        if (!previewsApplications.isEmpty()) {
+            for (Application app : previewsApplications
+            ) {
+                log.info("Getting previous applications if any!");
+                if ((startDate.after(app.getStartDate()) || startDate.equals(app.getStartDate()))
+                        && (startDate.before(app.getEndDate()) || startDate.equals(app.getEndDate()))
+                        || startDate.before(today())) {
+                    throw new InputException(BadRequest.APPLICATION_ALREADY_REQUESTED);
+                }
+                daysOnOtherApplications = daysOnOtherApplications + app.getDaysOff();
+            }
+        }
+        return daysOnOtherApplications;
     }
 
     @Override
