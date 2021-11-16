@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.time.format.DateTimeFormatter;
 
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 @EnableJpaRepositories(basePackages = "com.lhind.repository")
 @EntityScan(basePackages = "com.lhind.entities")
 @EnableConfigurationProperties()
+@EnableSwagger2
 public class AnnualLeaveApplication {
 
     public static void main(String[] args) {

@@ -7,11 +7,15 @@ import com.lhind.util.AuthenticationFacade;
 import com.lhind.util.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.lhind.util.ExcelDownloadableResponse.excel;
 
 @RestController
 @RequestMapping(value = Paths.APPLICATION)
@@ -61,7 +65,7 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.rejectApplication(rejectApplicationDto));
     }
 
-    @GetMapping
+    @PostMapping
     @PreAuthorize("hasAnyAuthority('SUPERVISOR','USER')")
     public ResponseEntity<List<ApplicationResponseDto>> getApplications(@RequestBody ApplicationFilterDto applicationFilterDto) {
         return ResponseEntity.ok(applicationService.getSupervisorApplications(applicationFilterDto));
@@ -70,7 +74,6 @@ public class ApplicationController {
     @PostMapping("/generateXlsx")
     @PreAuthorize("hasAnyAuthority('SUPERVISOR')")
     public ResponseEntity<Resource> generateXlsx(@RequestBody ApplicationFilterDto applicationFilterDto) {
-        return ResponseEntity.ok(applicationService.generateXlsx(applicationFilterDto));
+        return excel("Application_Report", applicationService.generateXlsx(applicationFilterDto));
     }
-
 }

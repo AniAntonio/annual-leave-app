@@ -155,7 +155,7 @@ public class ApplicationServiceImpl implements IApplicationService {
 
     public Resource generateXlsx(ApplicationFilterDto applicationFilterDto) {
         log.info("Getting my Applications!");
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
         List<ApplicationResponseDto> applicationResponseDtos = ApplicationConverter.toApplicationResponseDtoList(applicationRepository.findAll(getUserApplications(applicationFilterDto), pageable).getContent());
         return excelService.generateXlsx(applicationResponseDtos);
     }
