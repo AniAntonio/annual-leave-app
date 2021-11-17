@@ -12,4 +12,6 @@ public interface IAnnualLeaveService {
     void insertAnnualLeave(UserDto userDto, User user);
 
     void updateAnnualLeave(UpdateAnnualLeaveDto updateAnnualLeaveDto);
+
+    Integer getUserRemainingDays(Integer userId);
 }

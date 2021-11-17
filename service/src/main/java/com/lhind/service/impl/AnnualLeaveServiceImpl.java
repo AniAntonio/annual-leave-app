@@ -3,14 +3,18 @@ package com.lhind.service.impl;
 import com.lhind.converter.AnnualLeaveConverter;
 import com.lhind.dto.annualLeave.AnnualLeaveResponseDto;
 import com.lhind.dto.annualLeave.UpdateAnnualLeaveDto;
+import com.lhind.dto.application.ApplicationFilterDto;
+import com.lhind.dto.application.ApplicationResponseDto;
 import com.lhind.dto.user.UserDto;
 import com.lhind.entities.AnnualLeave;
 import com.lhind.entities.User;
+import com.lhind.enums.ApplicationStatus;
 import com.lhind.enums.Role;
 import com.lhind.exception.LhindNotFoundException;
 import com.lhind.repository.AnnualLeaveRepository;
 import com.lhind.repository.UserRepository;
 import com.lhind.service.IAnnualLeaveService;
+import com.lhind.service.IApplicationService;
 import com.lhind.util.NoData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +35,9 @@ public class AnnualLeaveServiceImpl implements IAnnualLeaveService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private IApplicationService applicationService;
 
     @Override
     public AnnualLeaveResponseDto getAnnualLeaveByUserId(Integer idUser) {
@@ -63,6 +70,20 @@ public class AnnualLeaveServiceImpl implements IAnnualLeaveService {
         annualLeave.setSpentDays(annualLeave.getSpentDays() + updateAnnualLeaveDto.getDaysOff());
         annualLeave.setRemainingDays(annualLeave.getRemainingDays() - updateAnnualLeaveDto.getDaysOff());
         annualLeaveRepository.save(annualLeave);
+    }
+
+    @Override
+    public Integer getUserRemainingDays(Integer userId) {
+        ApplicationFilterDto applicationFilterDto = new ApplicationFilterDto();
+        applicationFilterDto.setUserId(userId);
+        Integer daysOnOtherApplications = 0;
+        for (ApplicationResponseDto app : applicationService.getApplications(applicationFilterDto)) {
+            if (app.getStatus().name() != ApplicationStatus.REJECTED.name()) {
+                daysOnOtherApplications = daysOnOtherApplications + app.getDaysOff();
+            }
+        }
+        AnnualLeaveResponseDto annualLeaveResponseDto = this.getAnnualLeaveByUserId(userId);
+        return annualLeaveResponseDto.getRemainingDays() - daysOnOtherApplications;
     }
 
 
