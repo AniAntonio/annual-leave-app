@@ -29,7 +29,6 @@ public class SpringFoxConfig {
         mailSender.setPort(587);
 
         mailSender.setUsername("aniballabani@gmail.com");
-        mailSender.setPassword("itali2018");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
